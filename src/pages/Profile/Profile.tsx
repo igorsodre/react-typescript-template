@@ -7,35 +7,52 @@ import { AppContext, IAppContext } from '../../data/app-context';
 import { useAuth } from '../../hooks/auth-service';
 
 interface FormInputs {
+  name: string;
   email: string;
   password: string;
+  newpassword: string;
 }
-const LoginPage: React.FC<RouteComponentProps> = (props) => {
+
+const Profile: React.FC<RouteComponentProps> = (props) => {
   const ctx = useContext(AppContext) as IAppContext;
   const { register, handleSubmit, formState, errors, reset } = useForm<FormInputs>({
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: ctx.currentUser?.email, name: ctx.currentUser?.name, password: '', newpassword: '' },
     mode: 'onChange',
   });
   const { isValid } = formState;
 
-  const { login } = useAuth();
+  const { updateUser } = useAuth();
 
   const submithandler = async (data: FormInputs) => {
-    const { email, password } = data;
+    console.log('clicked update');
+    const { name, email, password, newpassword } = data;
     try {
-      const result = await login(email, password);
+      const result = await updateUser(name, email, password, newpassword);
       reset();
-      ctx.setAccessToken(result.accessToken);
-      ctx.setCurrentUser(result.user);
+      ctx.setCurrentUser(result);
       props.history.replace('/home');
     } catch (err) {
       console.log(err);
     }
   };
+
   return (
     <MainContainer>
       <form onSubmit={handleSubmit(submithandler)}>
-        <h3>Log in</h3>
+        <h3>Update Profile</h3>
+
+        <AppInput
+          label="Full Name"
+          register={register({
+            required: true,
+          })}
+          name="name"
+          type="text"
+          className="form-control"
+          placeholder="Full Name"
+          haserror={!!errors.name}
+          errortext="Name is required"
+        />
 
         <AppInput
           label="Email"
@@ -65,15 +82,23 @@ const LoginPage: React.FC<RouteComponentProps> = (props) => {
           errortext="Minimum length for password: 4"
         />
 
+        <AppInput
+          label="New Password"
+          register={register({ minLength: 4 })}
+          name="newpassword"
+          type="password"
+          className="form-control"
+          placeholder="Enter new password"
+          haserror={!!errors.newpassword}
+          errortext="Minimum length for password: 4"
+        />
+
         <button disabled={!isValid} type="submit" className="btn btn-dark btn-lg btn-block">
-          Sign in
+          Update
         </button>
-        {/* <p className="forgot-password text-right">
-          Forgot <Link to="/">password?</Link>
-        </p> */}
       </form>
     </MainContainer>
   );
 };
 
-export default LoginPage;
+export default Profile;

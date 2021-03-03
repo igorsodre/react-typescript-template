@@ -4,19 +4,19 @@ interface AppInputProps extends React.DetailedHTMLProps<React.InputHTMLAttribute
   haserror: boolean;
   errortext?: string;
   label?: string;
-  register: any;
+  register:
+    | string
+    | ((instance: HTMLInputElement | null) => void)
+    | React.RefObject<HTMLInputElement>
+    | null
+    | undefined;
 }
-const AppInput: React.FC<AppInputProps> = (props) => {
-  const inputProps: Partial<AppInputProps> = { ...props };
-  delete inputProps.haserror;
-  delete inputProps.register;
-  delete inputProps.errortext;
-  delete inputProps.label;
+const AppInput: React.FC<AppInputProps> = ({ label, haserror, errortext, register, ...defaultInputProps }) => {
   return (
     <div className="form-group">
-      <label>{props.label}</label>
-      <input {...inputProps} ref={props.register} />
-      {props.haserror && <p style={{ color: '#ee5253' }}>{props.errortext}</p>}
+      <label>{label}</label>
+      <input {...defaultInputProps} ref={register} />
+      {haserror && <p style={{ color: '#ee5253' }}>{errortext}</p>}
     </div>
   );
 };
